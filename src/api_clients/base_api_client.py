@@ -1,6 +1,6 @@
 import requests
 
-from typing import Optional, Any 
+from typing import Optional, Any, Union, SupportsFloat
 from requests import Response
 from urllib.parse import urljoin
 
@@ -9,6 +9,8 @@ from src.constants import STR_GET, STR_POST, LIST_SUPPORTED_HTTPS_METHODS
 from src.logger import get_logger
 
 logger = get_logger(__name__)
+
+ConvertableToFloat = Union[int, str, float, SupportsFloat]
 
 
 class BaseApiClient:
