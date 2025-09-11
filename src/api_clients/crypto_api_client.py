@@ -28,7 +28,7 @@ class CryptoApiClient(BaseApiClient):
 
 
     @classmethod
-    def from_subscription_type(cls, api_key: str = COIN_GECKO_API_KEY, subscription: str = COIN_GECKO_SUBSCRIPTION) -> "CryptoApiClient":
+    def from_subscription_type(cls, subscription: str = COIN_GECKO_SUBSCRIPTION) -> "CryptoApiClient":
         subscription_api_mapping = {
             STR_FREE    : (COIN_GECKO_DEMO_API_URL, COIN_GECKO_DEMO_API_KEY_HEADER),
             STR_PREMIUM : (COIN_GECKO_PRO_API_URL, COIN_GECKO_PRO_API_KEY_HEADER)
@@ -41,7 +41,7 @@ class CryptoApiClient(BaseApiClient):
             logger.error(msg)
             raise ValueError(msg)
         
-        return cls(base_url, api_key_header, api_key)
+        return cls(base_url, api_key_header, COIN_GECKO_API_KEY)
     
 
     def get_supported_crypto_symbol_list(self) -> list[str]:
@@ -69,10 +69,21 @@ class CryptoApiClient(BaseApiClient):
 
         logger.debug(f"-check_if_symbols_is_supported()")
         return is_subset
+    
 
-
-    def get_price(self, crypto_symbols: list) -> dict[str, float]:
+    def get_price(self, crypto_symbol: str) -> float:
         logger.debug(f"+get_price()")
+
+        prices = self.get_prices([crypto_symbol])
+
+        price  = prices[crypto_symbol]
+
+        logger.debug(f"-get_price()")
+        return price
+
+
+    def get_prices(self, crypto_symbols: list) -> dict[str, float]:
+        logger.debug(f"+get_prices()")
 
         if self.validate_crypto_list(crypto_symbols):
             endpoint = COIN_GECKO_SIMPLE_PRICE_ENDPOINT
@@ -82,19 +93,19 @@ class CryptoApiClient(BaseApiClient):
             }
 
             response = self.rest_call(http_method=HTTPMethod.GET, endpoint=endpoint, params=params)
-            crypto_prices = self._extract_price_from_response(crypto_symbols, response)
+            crypto_prices = self._extract_prices_from_response(crypto_symbols, response)
         
         else:
-            msg = f"get_price(): Some or all of the crypto symbols in the list are not supported. Following is the list of all the supported Cryptos. {self.supported_cryptos=}"
+            msg = f"get_prices(): Some or all of the crypto symbols in the list are not supported. Following is the list of all the supported Cryptos. {self.supported_cryptos=}"
             logger.error(msg)
             raise ValueError(msg)
         
-        logger.debug(f"-get_price()")
+        logger.debug(f"-get_prices()")
         return crypto_prices
 
     
-    def _extract_price_from_response(self, crypto_symbols: list, response: Response) -> dict[str, float]:
-        logger.debug(f"+_extract_price_from_response()")
+    def _extract_prices_from_response(self, crypto_symbols: list, response: Response) -> dict[str, float]:
+        logger.debug(f"+_extract_prices_from_response()")
         
         response_json = response.json()
         prices = {}
@@ -112,32 +123,32 @@ class CryptoApiClient(BaseApiClient):
                             prices[symbol] = float(price)
 
                         else:
-                            msg = f"_extract_price_from_response(): {type(price)=} cannot be converted into a float."
+                            msg = f"_extract_prices_from_response(): {type(price)=} cannot be converted into a float."
                             logger.error(msg)
                             raise ValueError(msg)
                     
                     else:
-                        msg = f"_extract_price_from_response(): Unexpected 'price_info', expected dict and '{self.CURRENCY}' to be a key. {type(price_info)=} {price_info=}"
+                        msg = f"_extract_prices_from_response(): Unexpected 'price_info', expected dict and '{self.CURRENCY}' to be a key. {type(price_info)=} {price_info=}"
                         logger.error(msg)
                         raise ValueError(msg)
                 
                 else:
-                    msg = f"_extract_price_from_response(): '{symbol}' not present in the response_json. Recevied {response_json.keys()}"
+                    msg = f"_extract_prices_from_response(): '{symbol}' not present in the response_json. Recevied {response_json.keys()}"
                     logger.error(msg)
                     raise ValueError(msg)
         
         else:
-            msg = f"_extract_price_from_response(): Expected 'response_json' to be 'dict', received {type(response_json)=}."
+            msg = f"_extract_prices_from_response(): Expected 'response_json' to be 'dict', received {type(response_json)=}."
             logger.error(msg)
             raise ValueError(msg)
         
-        logger.debug(f"-_extract_price_from_response()")
+        logger.debug(f"-_extract_prices_from_response()")
         return prices
     
 
 if __name__ == "__main__":
-    crypto_api_client = CryptoApiClient.from_subscription_type(COIN_GECKO_API_KEY, STR_FREE)
-    prices = crypto_api_client.get_price(["eth", "btc", "ltc"])
+    crypto_api_client = CryptoApiClient.from_subscription_type(STR_FREE)
+    prices = crypto_api_client.get_prices(["eth", "btc", "ltc"])
 
     import json
     print(json.dumps(prices, indent=4))
