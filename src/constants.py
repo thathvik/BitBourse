@@ -8,6 +8,8 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG').upper()
 COIN_GECKO_SUBSCRIPTION = os.environ.get('COIN_GECKO_SUBSCRIPTION', 'FREE').upper()
 COIN_GECKO_API_KEY      = os.environ.get('COIN_GECKO_API_KEY', '')
 
+ALPHA_VATAGE_API_KEY = os.environ.get('ALPHA_VATAGE_API_KEY','')
+
 STR_GET     = "GET"
 STR_POST    = "POST"
 
@@ -25,3 +27,13 @@ COIN_GECKO_SIMPLE_SUPPORTED_CRYPTO_ENDPOINT = "simple/supported_vs_currencies"
 
 STR_USD = "usd"
 STR_INR = "inr"
+
+# Stock API related constants
+ALPHA_VANTAGE_API_URL           = "https://www.alphavantage.co/"
+ALPHA_VANTAGE_API_KEY_PARAM     = "apikey"
+ALPHA_VATAGE_API_QUERY_ENDPOINT = "query"
+
+STR_TIME_SERIES_DAILY   = "TIME_SERIES_DAILY"
+
+TIME_SERIES_DAILY_KEY   = "Time Series (Daily)"
+CLOSE_KEY               = "4. close"
