@@ -1,3 +1,9 @@
+from typing import Union
+
+from src.io_interface import IOInterface
+from src.api_clients.stocks_api_client import StocksApiClient
+from src.api_clients.crypto_api_client import CryptoApiClient
+
 from src.logger import get_logger, setup_logging
 
 # Set's up logging structure for the program before any logger calls 
@@ -8,13 +14,15 @@ logger = get_logger(__name__)
 
 def main():
     try:
-        # Function or class to help pick between stocks and crypto
-        # Help pick the symbol before going forward
+        io_interface = IOInterface()
 
-        # make API call
+        api_client: Union[StocksApiClient, CryptoApiClient] = io_interface.pick_api_client()
 
-        # Turn the price for the symbol
-        print(f"Placeholder.")
+        symbol = io_interface.get_symbol()
+
+        price = api_client.get_price(symbol)
+
+        io_interface.showcase_symbol_price(symbol, price)
 
     except Exception as global_exception:
         logger.error(f"main(): Unable to show the requested information. Global Exception Occured: {global_exception}")

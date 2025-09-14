@@ -15,6 +15,7 @@ STR_POST    = "POST"
 
 STR_FREE    = "FREE"
 STR_PREMIUM = "PREMIUM"
+STR_DEFAULT = "DEFAULT"
 
 # Crypto API related constants
 COIN_GECKO_DEMO_API_URL         = "https://api.coingecko.com/api/v3/"
@@ -37,3 +38,7 @@ STR_TIME_SERIES_DAILY   = "TIME_SERIES_DAILY"
 
 TIME_SERIES_DAILY_KEY   = "Time Series (Daily)"
 CLOSE_KEY               = "4. close"
+
+STR_STOCKS = "Stocks"
+STR_CRYPTO = "Crypto"
+

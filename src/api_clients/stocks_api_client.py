@@ -21,6 +21,12 @@ class StocksApiClient(BaseApiClient):
         }
 
 
+    @staticmethod
+    def from_subscription_type(subscription: str) -> 'StocksApiClient':
+        # Currently Stocks API returns the same API Client Configurations for FREE and PREMIUM.
+        return StocksApiClient()
+
+
     def get_price(self, stock_symbol: str) -> float:
         logger.debug(f"+get_price()")
 
