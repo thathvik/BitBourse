@@ -24,7 +24,10 @@ class CryptoApiClient(BaseApiClient):
             api_key_header: api_key
         }
         self.CURRENCY           = STR_USD
-        self.supported_cryptos  = self.get_supported_crypto_symbol_list()
+
+        # since the returned list from the method (self.get_supported_crypto_symbol_list()) is invalid, 
+        # return was changed to get empty list
+        self.supported_cryptos  = []
 
 
     @classmethod
@@ -44,33 +47,6 @@ class CryptoApiClient(BaseApiClient):
         return cls(base_url, api_key_header, COIN_GECKO_API_KEY)
     
 
-    def get_supported_crypto_symbol_list(self) -> list[str]:
-        logger.debug(f"+get_supported_crypto_symbol_list()")
-        
-        endpoint = COIN_GECKO_SIMPLE_SUPPORTED_CRYPTO_ENDPOINT
-        response = self.rest_call(http_method=HTTPMethod.GET, endpoint=endpoint)
-
-        crypto_list = response.json()
-
-        # Using Pythnoic approach to raise exception
-        if not (isinstance(crypto_list, list) and all(isinstance(symbol, str) for symbol in crypto_list)):
-            msg = f"get_supported_crypto_symbol_list(): Unexpected output. Expected 'list', recevied {type(crypto_list)=}. All values in list must be strings."
-            logger.error(msg)
-            raise ValueError(msg)
-
-        logger.debug(f"-get_supported_crypto_symbol_list()")
-        return crypto_list
-    
-
-    def validate_crypto_list(self, crypto_symbol: list) -> bool:
-        logger.debug(f"+check_if_symbols_is_supported()")
-        
-        is_subset = set(crypto_symbol) <= set(self.supported_cryptos)
-
-        logger.debug(f"-check_if_symbols_is_supported()")
-        return is_subset
-    
-
     def get_price(self, crypto_symbol: str) -> float:
         logger.debug(f"+get_price()")
 
@@ -85,7 +61,9 @@ class CryptoApiClient(BaseApiClient):
     def get_prices(self, crypto_symbols: list) -> dict[str, float]:
         logger.debug(f"+get_prices()")
 
-        if self.validate_crypto_list(crypto_symbols):
+        # Cannot use the Crypto validation since the supported crypto API isn't returning accurate information.
+        # if self.validate_crypto_list(crypto_symbols):
+        if True:
             endpoint = COIN_GECKO_SIMPLE_PRICE_ENDPOINT
             params = {
                 "vs_currencies" : self.CURRENCY,
@@ -146,9 +124,48 @@ class CryptoApiClient(BaseApiClient):
         return prices
     
 
+    def get_supported_crypto_symbol_list(self) -> list[str]:
+        """
+        [Please do not use this method]
+        API called to get the list of supported cryptos isn't returning the right information.
+
+        Return:
+            list
+        """
+        logger.debug(f"+get_supported_crypto_symbol_list()")
+        
+        endpoint = COIN_GECKO_SIMPLE_SUPPORTED_CRYPTO_ENDPOINT
+        response = self.rest_call(http_method=HTTPMethod.GET, endpoint=endpoint)
+
+        crypto_list = response.json()
+
+        # Using Pythnoic approach to raise exception
+        if not (isinstance(crypto_list, list) and all(isinstance(symbol, str) for symbol in crypto_list)):
+            msg = f"get_supported_crypto_symbol_list(): Unexpected output. Expected 'list', recevied {type(crypto_list)=}. All values in list must be strings."
+            logger.error(msg)
+            raise ValueError(msg)
+
+        crypto_list = []
+
+        logger.debug(f"-get_supported_crypto_symbol_list()")
+        return crypto_list
+    
+
+    # Can no longer use this to validate, since the API list is no longer valid.
+    def validate_crypto_list(self, crypto_symbol: list) -> bool:
+        logger.debug(f"+check_if_symbols_is_supported()")
+        
+        is_subset = set(crypto_symbol) <= set(self.supported_cryptos)
+
+        logger.debug(f"-check_if_symbols_is_supported()")
+        return is_subset
+    
+
 if __name__ == "__main__":
     crypto_api_client = CryptoApiClient.from_subscription_type(STR_FREE)
+    list_symbols = crypto_api_client.get_supported_crypto_symbol_list()
     prices = crypto_api_client.get_prices(["eth", "btc", "ltc"])
 
     import json
     print(json.dumps(prices, indent=4))
+    print(json.dumps(list_symbols, indent=4))
