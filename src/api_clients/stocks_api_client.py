@@ -4,7 +4,7 @@ from requests import Response
 from src.api_clients.base_api_client import BaseApiClient, ConvertableToFloat
 
 from src.constants import (
-    ALPHA_VANTAGE_API_URL, ALPHA_VANTAGE_API_KEY_PARAM, ALPHA_VATAGE_API_KEY, ALPHA_VATAGE_API_QUERY_ENDPOINT,
+    ALPHA_VANTAGE_API_URL, ALPHA_VANTAGE_API_KEY_PARAM, ALPHA_VANTAGE_API_KEY, ALPHA_VATAGE_API_QUERY_ENDPOINT,
     STR_TIME_SERIES_DAILY, TIME_SERIES_DAILY_KEY, CLOSE_KEY
 )
 
@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 class StocksApiClient(BaseApiClient):
 
-    def __init__(self, base_url: str = ALPHA_VANTAGE_API_URL, api_key_param: str = ALPHA_VANTAGE_API_KEY_PARAM, api_key: str = ALPHA_VATAGE_API_KEY) -> None:
+    def __init__(self, base_url: str = ALPHA_VANTAGE_API_URL, api_key_param: str = ALPHA_VANTAGE_API_KEY_PARAM, api_key: str = ALPHA_VANTAGE_API_KEY) -> None:
         super().__init__(base_url)
         self.params = {
             api_key_param: api_key

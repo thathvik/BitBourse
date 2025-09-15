@@ -8,7 +8,7 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG').upper()
 COIN_GECKO_SUBSCRIPTION = os.environ.get('COIN_GECKO_SUBSCRIPTION', 'FREE').upper()
 COIN_GECKO_API_KEY      = os.environ.get('COIN_GECKO_API_KEY', '')
 
-ALPHA_VATAGE_API_KEY = os.environ.get('ALPHA_VATAGE_API_KEY','')
+ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY','')
 
 STR_GET     = "GET"
 STR_POST    = "POST"

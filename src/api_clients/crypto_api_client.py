@@ -17,6 +17,10 @@ logger = get_logger(__name__)
 
 
 class CryptoApiClient(BaseApiClient):
+    # Class variable to control symbol validation
+    # Set to True to skip validation (useful when API endpoint is broken)
+    # This is a good example of using class variables for configuration
+    SKIP_SYMBOL_VALIDATION = True
 
     def __init__(self, base_url: str, api_key_header: str, api_key: str) -> None:
         super().__init__(base_url)
@@ -25,9 +29,10 @@ class CryptoApiClient(BaseApiClient):
         }
         self.CURRENCY           = STR_USD
 
-        # since the returned list from the method (self.get_supported_crypto_symbol_list()) is invalid, 
-        # return was changed to get empty list
-        self.supported_cryptos  = []
+        # Only fetch supported cryptos if validation is enabled
+        # This shows students how to use conditional logic based on configuration
+        self.supported_cryptos = [] if self.SKIP_SYMBOL_VALIDATION else self.get_supported_crypto_symbol_list()
+
 
 
     @classmethod
@@ -61,9 +66,11 @@ class CryptoApiClient(BaseApiClient):
     def get_prices(self, crypto_symbols: list) -> dict[str, float]:
         logger.debug(f"+get_prices()")
 
-        # Cannot use the Crypto validation since the supported crypto API isn't returning accurate information.
-        # if self.validate_crypto_list(crypto_symbols):
-        if True:
+        # This demonstrates Python's short-circuit evaluation:
+        # If SKIP_SYMBOL_VALIDATION is True, validate_crypto_list() is never called
+        # This is efficient and shows students how to handle API limitations gracefully
+        if self.SKIP_SYMBOL_VALIDATION or self.validate_crypto_list(crypto_symbols):
+            # We can proceed: either validation is skipped OR symbols are valid
             endpoint = COIN_GECKO_SIMPLE_PRICE_ENDPOINT
             params = {
                 "vs_currencies" : self.CURRENCY,
@@ -126,36 +133,59 @@ class CryptoApiClient(BaseApiClient):
 
     def get_supported_crypto_symbol_list(self) -> list[str]:
         """
-        [Please do not use this method]
-        API called to get the list of supported cryptos isn't returning the right information.
+        Fetches the list of supported cryptocurrency symbols from the API.
 
-        Return:
-            list
+        NOTE: The CoinGecko API endpoint for supported currencies is currently broken.
+        When SKIP_SYMBOL_VALIDATION is True, this method returns an empty list.
+
+        This method is kept for future use when the API is fixed.
+        It demonstrates good practice: keeping code that will be needed later,
+        even if it's temporarily disabled.
+
+        Returns:
+            list: List of supported crypto symbols (empty if validation is skipped)
         """
         logger.debug(f"+get_supported_crypto_symbol_list()")
-        
-        endpoint = COIN_GECKO_SIMPLE_SUPPORTED_CRYPTO_ENDPOINT
-        response = self.rest_call(http_method=HTTPMethod.GET, endpoint=endpoint)
-
-        crypto_list = response.json()
-
-        # Using Pythnoic approach to raise exception
-        if not (isinstance(crypto_list, list) and all(isinstance(symbol, str) for symbol in crypto_list)):
-            msg = f"get_supported_crypto_symbol_list(): Unexpected output. Expected 'list', recevied {type(crypto_list)=}. All values in list must be strings."
-            logger.error(msg)
-            raise ValueError(msg)
 
         crypto_list = []
+
+        # Early return if validation is skipped
+        # This is a good pattern for students to learn
+        if not self.SKIP_SYMBOL_VALIDATION:
+            endpoint = COIN_GECKO_SIMPLE_SUPPORTED_CRYPTO_ENDPOINT
+            response = self.rest_call(http_method=HTTPMethod.GET, endpoint=endpoint)
+
+            crypto_list = response.json()
+
+            # Validate the response format
+            # This shows students how to check data types before using them
+            if not (isinstance(crypto_list, list) and all(isinstance(symbol, str) for symbol in crypto_list)):
+                msg = f"get_supported_crypto_symbol_list(): Unexpected output. Expected 'list', recevied {type(crypto_list)=}. All values in list must be strings."
+                logger.error(msg)
+                raise ValueError(msg)
+        else:
+            logger.info("get_supported_crypto_symbol_list(): Symbol validation is disabled. Returning empty list.")
 
         logger.debug(f"-get_supported_crypto_symbol_list()")
         return crypto_list
     
 
-    # Can no longer use this to validate, since the API list is no longer valid.
-    def validate_crypto_list(self, crypto_symbol: list) -> bool:
+    def validate_crypto_list(self, crypto_symbols: list) -> bool:
+        """
+        Validates if the given crypto symbols are supported.
+
+        This method demonstrates the use of set operations in Python.
+        It checks if all requested symbols are in the supported list.
+
+        Args:
+            crypto_symbol: List of cryptocurrency symbols to validate
+
+        Returns:
+            bool: True if all symbols are supported, False otherwise
+        """
         logger.debug(f"+check_if_symbols_is_supported()")
         
-        is_subset = set(crypto_symbol) <= set(self.supported_cryptos)
+        is_subset = set(crypto_symbols) <= set(self.supported_cryptos)
 
         logger.debug(f"-check_if_symbols_is_supported()")
         return is_subset
